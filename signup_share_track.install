@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the order module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function signup_share_track_schema() {
+  $schema = array();
+  $schema['signup_share_track'] = array(
+    'description' => 'The base table for keeping short_url.',
+    'fields' => array(
+      'uid' => array(
+        'description' => '',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'url' => array(
+        'description' => '',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'count' => array(
+        'description' => '',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+    ),
+    'unique keys' => array(
+      'uid' => array('uid'),
+    ),
+    'primary key' => array('uid'),
+    'indexes' => array(
+      'url' => array('url'),
+    ),
+  );
+
+  $schema['signup_share_track_signup'] = array(
+    'description' => '',
+    'fields' => array(
+      'uid' => array(
+        'description' => '',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'uid_from' => array(
+        'description' => 'person signed up from',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'signed_up' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp for when user signed up.',
+      ),
+    ),
+    'primary key' => array('uid'),
+  );
+
+
+  return $schema;
+}
+
+function signup_share_track_install() {
+  $result = db_select('users', 'us')->fields('us')->condition('uid', '0', '<>')->execute();
+  foreach ($result as $row) {
+    $path = signup_share_track_generate_shortUrl($row->uid, $base = NULL);
+    if ($path) {
+      db_insert('signup_share_track')->fields(array('uid' => $row->uid, 'url' => $path, 'count' => '0'))->execute();
+    }
+  }
+}
