@@ -78,6 +78,16 @@ function signup_share_track_view($form, $form_state) {
       '2' => t('JiaThis'),
     ),
   );
+  $form['skip_signup'] = array(
+    '#type' => 'checkboxes', 
+    '#title' => t('Skip Registration Page'),
+    '#default_value' => array(
+      '1' => variable_get('sst_skip_signup', '')
+    ),
+    '#options' => array(
+      '1' => t('Skip Signup'),
+    ),
+  );
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
@@ -94,5 +104,6 @@ function signup_share_track_view_submit($form, $form_state) {
   variable_set('sst_title', $values['title']);
   variable_set('sst_text', $values['text']);
   variable_set('sst_signup_button', $values['button']);
+  variable_set('sst_skip_signup', $values['skip_signup']['1']);
   drupal_set_message(t('Saved'));
 }

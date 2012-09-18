@@ -218,9 +218,33 @@ function signup_share_track_join_validate($form, &$form_state) {
 }
 
 function signup_share_track_join_submit($form, &$form_state) {
-  $form_state['redirect'] = array('user/register');
-  $_SESSION['signup_share_track_user_from'] = $form_state['values']['uid'];
-  $_SESSION['signup_share_track_mail'] = $form_state['values']['mail'];
+  $skip_signup = variable_get('sst_skip_signup', '');
+  if($skip_signup == 1){
+    $new_user = array(
+      'name' => $form_state['values']['mail'],
+      'pass' => user_password(),
+      'mail' => $form_state['values']['mail'],
+      'init' => $form_state['values']['mail'],
+      'status' => 0,
+      'access' => time(),
+      'created' => time(),
+    );
+    $account = user_save('', $new_user);
+    // Terminate if an error occurred during user_save().
+    if (!$account) {
+      drupal_set_message(t("Error saving user account."), 'error');
+      $form_state['redirect'] = '';
+      return;
+    }
+    watchdog('user', 'New user: %name (%email).', array('%name' => $form_state['values']['mail'], '%email' => $form_state['values']['mail']), WATCHDOG_NOTICE, l(t('edit'), 'user/' . $account->uid . '/edit'));
+    _user_mail_notify('register_pending_approval', $account);
+    drupal_set_message(t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address.'));
+    $form_state['redirect'] = array('<front>');
+  }else{
+    $form_state['redirect'] = array('user/register');
+    $_SESSION['signup_share_track_user_from'] = $form_state['values']['uid'];
+    $_SESSION['signup_share_track_mail'] = $form_state['values']['mail'];
+  }
 }
 
 function signup_share_track_createUrl($uid) {
@@ -448,3 +472,62 @@ function signup_share_track_tokens($type, $tokens, array $data = array(), array 
   }
   return $replacements;
 }
+
+/*function signup_share_track_user_register($email = NULL) {
+  $admin = $form_state['values']['administer_users'];
+  $pass = user_password();
+  $notify = !empty($form_state['values']['notify']);
+
+  // Remove unneeded values.
+  form_state_values_clean($form_state);
+  
+  $form_state['values']['name'] = $email;
+  $form_state['values']['pass'] = $pass;
+  $form_state['values']['init'] = $email;
+
+  $account = $form['#user'];
+  entity_form_submit_build_entity('user', $account, $form, $form_state);
+
+  // Populate $edit with the properties of $account, which have been edited on
+  // this form by taking over all values, which appear in the form values too.
+  $edit = array_intersect_key((array) $account, $form_state['values']);
+  $account = user_save($account, $edit);
+
+  // Terminate if an error occurred during user_save().
+  if (!$account) {
+    drupal_set_message(t("Error saving user account."), 'error');
+    return;
+  }
+  $form_state['user'] = $account;
+  $form_state['values']['uid'] = $account->uid;
+
+  watchdog('user', 'New user: %name (%email).', array('%name' => $email, '%email' => $email), WATCHDOG_NOTICE, l(t('edit'), 'user/' . $account->uid . '/edit'));
+
+  // Add plain text password into user account to generate mail tokens.
+  $account->password = $pass;
+
+  if (!$admin && !variable_get('user_email_verification', TRUE) && $account->status) {
+    _user_mail_notify('register_no_approval_required', $account);
+    $form_state['uid'] = $account->uid;
+    user_login_submit(array(), $form_state);
+    drupal_set_message(t('Registration successful. You are now logged in.'));
+    $form_state['redirect'] = '';
+  }
+  // No administrator approval required.
+  elseif ($account->status || $notify) {
+    $op = $notify ? 'register_admin_created' : 'register_no_approval_required';
+    _user_mail_notify($op, $account);
+    if ($notify) {
+      drupal_set_message(t('A welcome message with further instructions has been e-mailed to the new user <a href="@url">%name</a>.', array('@url' => url($uri['path'], $uri['options']), '%name' => $account->name)));
+    }
+    else {
+      drupal_set_message(t('A welcome message with further instructions has been sent to your e-mail address.'));
+      $form_state['redirect'] = '';
+    }
+  }
+  // Administrator approval required.
+  else {
+    _user_mail_notify('register_pending_approval', $account);
+    drupal_set_message(t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address.'));
+  }
+}*/
