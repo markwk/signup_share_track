@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Implementation of hook_menu()
+ */
 function signup_share_track_menu() {
   $items = array();
   $items['join/%'] = array(
@@ -16,24 +19,25 @@ function signup_share_track_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/config/people/sst/settings'] = array(
-    'title' => t('SST Settings url generate'),
+  // Sign Up Share Track settings page.
+  $items['admin/config/sst'] = array(
+    'title' => 'Sign Up Share Track settings',
+    'description' => 'Manage Sign Up Share Track settings page.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('signup_share_track_settings'),
     'access arguments' => array('administer signup_share_track'),
-    'type' => MENU_LOCAL_TASK,
     'file' => 'signup_share_track.admin.inc',
-    'file path' => drupal_get_path('module', 'signup_share_track'),
+    'weight' => -10,
   );
-  $items['admin/config/people/sst/view'] = array(
-    'title' => t('SST Settings view'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('signup_share_track_view'),
+  $items['admin/config/sst/settings'] = array(
+    'title' => 'Sign Up Share Track Settings',
+    'description' => 'Sign Up Share Track settings page.',
     'access arguments' => array('administer signup_share_track'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'signup_share_track.admin.inc',
-    'file path' => drupal_get_path('module', 'signup_share_track'),
+    'weight' => -9,
   );
+  
   return $items;
 }
 
@@ -58,25 +62,6 @@ function signup_share_track_permission() {
   );
 }
 
-//function signup_share_track_user_tab($uid) {
-//  global $base_url;
-//  $output = '';
-//  if (!empty($uid) && is_numeric($uid)) {
-//    $user = user_load($uid);
-//    $user_f = db_select('signup_share_track', 'sst')->fields('sst')->condition('uid', $uid)->execute()->fetchAssoc();
-//    if (!empty($user_f)) {
-//      if ($user->language == 'zh-hans') {
-//        $output = '<div class="link_to_page">' . l(t('Link to your sign up page'), '/join/' . $user_f['url']) . '</div>';
-//      }
-//      else {
-//        $output = '<div class="link_to_page">' . l(t('Link to your sign up page'), $base_url . '/join/' . $user_f['url']) . '</div>';
-//      }
-//      $output .= '<div class="sst_count">' . $user_f['count'] . t(' people have signup up via user link.') . '</div>';
-//    }
-//  }
-//  return $output;
-//}
-
 function signup_share_track_user_insert(&$edit, $account, $category) {
   signup_share_track_createUrl($account->uid);
   if (isset($_SESSION['signup_share_track_user_from'])) {
@@ -88,8 +73,8 @@ function signup_share_track_user_insert(&$edit, $account, $category) {
 
 function signup_share_track_generate_shortUrl($integer, $base = NULL) {
   $base_1 = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
-  $base = variable_get('signup_share_track_allow_char', $base_1);
-  $len = variable_get('signup_share_track_len_link', '3');
+  $base = variable_get('sst_allowed_char', $base_1);
+  $len = variable_get('sst_link_length', '3');
   $length = strlen($base);
   $out = '';
   srand($integer);
@@ -102,10 +87,7 @@ function signup_share_track_generate_shortUrl($integer, $base = NULL) {
 function signup_share_track_join($form, $form_state, $url) {
   global $language;
   drupal_add_css('.clear {clear:both; margin-top:20px;}', 'inline');
-  // drupal_add_js("var switchTo5x=true;", 'inline');
-  // drupal_add_js('http://w.sharethis.com/button/buttons.js', 'file');
-  //  drupal_add_js("stLight.options({publisher:'65de9d80-1391-4751-a5e7-23b2671c4a81'});", 'inline');
-
+  
   $user_f = db_select('signup_share_track', 'sst')->fields('sst')->condition('url', $url)->execute()->fetchAssoc();
 
 
@@ -150,7 +132,7 @@ function signup_share_track_join($form, $form_state, $url) {
       );
       $form['submit'] = array(
         '#type' => 'submit',
-        '#value' => t(variable_get('sst_signup_button', 'Signup Now'), array(), array('langcode' => $user_owner->language)),
+        '#value' => t(variable_get('sst_button_text', 'Signup Now'), array(), array('langcode' => $user_owner->language)),
       );
     }
     if (variable_get('sst_addthis', '1') == 1) {
@@ -237,6 +219,8 @@ function signup_share_track_join_submit($form, &$form_state) {
       return;
     }
     watchdog('user', 'New user: %name (%email).', array('%name' => $form_state['values']['mail'], '%email' => $form_state['values']['mail']), WATCHDOG_NOTICE, l(t('edit'), 'user/' . $account->uid . '/edit'));
+    db_insert('signup_share_track_signup')->fields(array('uid' => $account->uid, 'uid_from' => $form_state['values']['uid'], 'signed_up' => REQUEST_TIME))->execute();
+    db_update('signup_share_track')->condition('uid', $form_state['values']['uid'], '=')->expression('count', 'count + :count', array(':count' => 1))->execute();
     _user_mail_notify('register_pending_approval', $account);
     drupal_set_message(t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.<br />In the meantime, a welcome message with further instructions has been sent to your e-mail address.'));
     $form_state['redirect'] = array('<front>');
@@ -328,65 +312,6 @@ function signup_share_track_top_invites() {
   return $element;
 }
 
-/**
- * Implements hook_views_api().
- */
-function signup_share_track_views_api() {
-  return array(
-    'api' => 3,
-    'path' => drupal_get_path('module', 'signup_share_track'),
-  );
-}
-
-/**
- * Implements hook_page_alter().
- * Adds "Go back" link to the confirmation page after csv export.
- */
-function signup_share_track_page_alter(&$page) {
-  global $base_url;
-  if (arg(0) == 'admin' && arg(1) == 'config' && arg(2) == 'people' && arg(3) == 'sst' && arg(4) == 'export') {
-    $page['content']['system_main']['main']['#markup'] .= '<h3><a href=' . $base_url . '/admin/config/people/sst>Go back</a></h3>';
-  }
-}
-
-/**
- * Implements hook_views_pre_render().
- * Adds link to user's share page in case of no result.
- */
-function signup_share_track_views_pre_render(&$view) {
-  if ($view->name == 'sst_user') {
-    if (empty($view->result)) {
-      $user_f = db_select('signup_share_track', 'sst')->fields('sst')->condition('uid', $view->args[0])->execute()->fetchAssoc();
-      if (!empty($user_f)) {
-        global $base_url;
-        $view->attachment_before = l("Link to " . $view->build_info['substitutions']['%1'] . "'s" . " sign up page", $base_url . '/join/' . $user_f['url']);
-      }
-    }
-    else {
-      $account = user_load($view->args[0]);
-      if (!user_access('view own signed up users', $account)) {
-        drupal_add_js(drupal_get_path('module', 'signup_share_track') . "/signup_share_track.js", 'file');
-      }
-    }
-  }
-  elseif ($view->name == 'sst') {
-    $view->attachment_before = 'Total amount of signups equals ' . $view->total_rows;
-    if (!empty($view->exposed_input)) {
-      if ($view->exposed_input['field_interested_location_tid'] !== 'All') {
-        $country = taxonomy_term_load($view->exposed_input['field_interested_location_tid']);
-        if ($view->exposed_input['field_interested_role_value'] !== 'All') {
-          $view->attachment_before = 'Total amount of sign ups for country <em>' . $country->name . '</em> and for role <em>' . $view->exposed_input['field_interested_role_value'] . '</em> equals ' . $view->total_rows . '.';
-        }
-        else {
-          $view->attachment_before = 'Total amount of sign ups for country <em>' . $country->name . '</em> equals ' . $view->total_rows . '.';
-        }
-      }
-      elseif ($view->exposed_input['field_interested_role_value'] !== 'All') {
-        $view->attachment_before = 'Total amount of sign ups for role <em>' . $view->exposed_input['field_interested_role_value'] . '</em> equals ' . $view->total_rows . '.';
-      }
-    }
-  }
-}
 /**
  * Showing user roles on profile page and link to there respective pages
  */

@@ -62,8 +62,6 @@ function signup_share_track_schema() {
     ),
     'primary key' => array('uid'),
   );
-
-
   return $schema;
 }
 
@@ -81,20 +79,18 @@ function signup_share_track_install() {
  * Implements of hook_uninstall().
  */
 function signup_share_track_uninstall() {
+ 
   drupal_uninstall_schema('signup_share_track');
   drupal_uninstall_schema('signup_share_track_signup');
   
-  // Clear variables of signup_share_track_view form
+  // Clear variables of signup_share_track_settings form
+  variable_del('sst_allowed_char');
+  variable_del('sst_link_length');
   variable_del('sst_addthis');
   variable_del('sst_jiathis');
   variable_del('sst_title');
   variable_del('sst_text');
-  variable_del('sst_signup_button');
+  variable_del('sst_button_text');
   variable_del('sst_skip_signup');
-  
-  // Clear variables of signup_share_track_settings form
-  variable_del('signup_share_track_allow_char');
-  variable_del('signup_share_track_len_link');
-
 }
 

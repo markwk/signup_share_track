@@ -1,53 +1,42 @@
 <?php
 
 function signup_share_track_settings() {
-  $form = array();
-  $form['allows_char'] = array(
+  $form['sst_url_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sign Up Share Track Url settings'),
+    '#weight' => 5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 0,
+  );
+  $form['sst_url_settings']['sst_allowed_char'] = array(
     '#type' => 'textfield',
     '#title' => t('Allows character for generate user url'),
-    '#default_value' => variable_get('signup_share_track_allow_char', 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'),
+    '#default_value' => variable_get('sst_allowed_char', 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'),
     '#required' => TRUE,
   );
-  $form['num'] = array(
+  $form['sst_url_settings']['sst_link_length'] = array(
     '#type' => 'textfield',
     '#title' => t('Num character for url'),
-    '#default_value' => variable_get('signup_share_track_len_link', '3'),
+    '#default_value' => variable_get('sst_link_length', '3'),
     '#required' => TRUE,
   );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
+  $form['sst_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sign Up Share Track settings'),
+    '#weight' => 5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 1,
   );
-
-  return $form;
-}
-
-function signup_share_track_settings_validate($form, $form_state) {
-  $values = $form_state['values'];
-  if (!is_numeric($values['num'])) {
-    form_set_error('num', t('You can use only numbers'));
-  }
-  elseif ($values['num'] > 200) {
-    form_set_error('num', t('Max number 200'));
-  }
-}
-
-function signup_share_track_settings_submit($form, $form_state) {
-  variable_set('signup_share_track_allow_char', $form_state['values']['allows_char']);
-  variable_set('signup_share_track_len_link', $form_state['values']['num']);
-  drupal_set_message('Saved');
-}
-
-function signup_share_track_view($form, $form_state) {
-  $form = array();
-  $form['title'] = array(
+  $form['sst_settings']['sst_title'] = array(
     '#title' => t('Title'),
     '#type' => 'textfield',
     '#weight' => '-5',
     '#default_value' => variable_get('sst_title', 'Join The Revolution'),
     '#required' => '1',
   );
-  $form['text'] = array(
+  $form['sst_settings']['sst_text'] = array(
     '#title' => t('Text'),
     '#type' => 'textfield',
     '#weight' => '-4',
@@ -55,16 +44,15 @@ function signup_share_track_view($form, $form_state) {
     '#description' => t('You can use variable &lt;username&gt; for display name of page owner.'),
     '#required' => '1',
   );
-  $form['button'] = array(
+  $form['sst_settings']['sst_button_text'] = array(
     '#title' => t('Button text'),
     '#type' => 'textfield',
     '#weight' => '-3',
-    '#default_value' => variable_get('sst_signup_button', 'Signup Now'),
+    '#default_value' => variable_get('sst_button_text', 'Signup Now'),
     '#required' => '1',
   );
-  $form['share_checkboxes'] = array(
+  $form['sst_settings']['sst_share_checkboxes'] = array(
     '#multiple' => '1',
-    /* '#key_type_toggled' => '1', */
     '#required' => '0',
     '#weight' => '1',
     '#default_value' => array(
@@ -78,11 +66,11 @@ function signup_share_track_view($form, $form_state) {
       '2' => t('JiaThis'),
     ),
   );
-  $form['skip_signup'] = array(
+  $form['sst_settings']['sst_skip_signup'] = array(
     '#type' => 'checkboxes', 
     '#title' => t('Skip Registration Page'),
     '#default_value' => array(
-      '1' => variable_get('sst_skip_signup', '')
+      '1' => variable_get('sst_skip_signup', '1')
     ),
     '#options' => array(
       '1' => t('Skip Signup'),
@@ -90,20 +78,33 @@ function signup_share_track_view($form, $form_state) {
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
-    '#weight' => '2',
+    '#value' => t('Save Configuration'),
+    '#weight' => 3,
   );
   return $form;
 }
 
-function signup_share_track_view_submit($form, $form_state) {
-
+function signup_share_track_settings_validate($form, $form_state) {
   $values = $form_state['values'];
-  variable_set('sst_addthis', $values['share_checkboxes']['1']);
-  variable_set('sst_jiathis', $values['share_checkboxes']['2']);
-  variable_set('sst_title', $values['title']);
-  variable_set('sst_text', $values['text']);
-  variable_set('sst_signup_button', $values['button']);
-  variable_set('sst_skip_signup', $values['skip_signup']['1']);
-  drupal_set_message(t('Saved'));
+  if (!is_numeric($values['sst_link_length'])) {
+    form_set_error('sst_link_length', t('You can use only numbers'));
+  }
+  elseif ($values['sst_link_length'] > 200) {
+    form_set_error('sst_link_length', t('Max number 200'));
+  }
 }
+
+function signup_share_track_settings_submit($form, $form_state) {
+  $values = $form_state['values'];
+  variable_set('sst_allowed_char', $values['sst_allowed_char']);
+  variable_set('sst_link_length', $values['sst_link_length']);
+  variable_set('sst_addthis', $values['sst_share_checkboxes']['1']);
+  variable_set('sst_jiathis', $values['sst_share_checkboxes']['2']);
+  variable_set('sst_title', $values['sst_title']);
+  variable_set('sst_text', $values['sst_text']);
+  variable_set('sst_button_text', $values['sst_button_text']);
+  variable_set('sst_skip_signup', $values['sst_skip_signup']['1']);
+  drupal_set_message('Configuration has been saved.');
+  
+}
+

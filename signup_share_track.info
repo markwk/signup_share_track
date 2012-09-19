@@ -2,12 +2,5 @@ name = Sign Up Share Track
 description = Sign Up, Then Share via a Unique User URL
 package = Custom modules
 core = 7.x
-
+project = "signup_share_track"
 files[] = signup_share_track.admin.inc
-files[] = signup_share_track.views.inc
-files[] = signup_share_track.views_default.inc
-; Handlers
-files[] = views/handlers/signup_share_track_views_handler_field_share_link.inc
-files[] = views/handlers/signup_share_track_views_handler_field_user_name.inc
-dependencies[] = views
-dependencies[] = views_data_export
