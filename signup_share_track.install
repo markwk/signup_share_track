@@ -89,8 +89,10 @@ function signup_share_track_uninstall() {
   variable_del('sst_addthis');
   variable_del('sst_jiathis');
   variable_del('sst_title');
+  variable_del('sst_title_user');
   variable_del('sst_text');
   variable_del('sst_button_text');
   variable_del('sst_skip_signup');
+  variable_del('sst_form_text');
 }
 
