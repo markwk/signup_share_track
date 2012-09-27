@@ -5,3 +5,4 @@ core = 7.x
 project = "signup_share_track"
 files[] = signup_share_track.admin.inc
 files[] = signup_share_track.rules.inc
+dependencies[] = rules
