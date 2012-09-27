@@ -30,20 +30,12 @@ function signup_share_track_menu() {
   // Sign Up Share Track settings page.
   $items['admin/config/people/sst'] = array(
     'title' => 'Sign Up Share Track settings',
-    'description' => 'Manage Sign Up Share Track settings page.',
+    'description' => 'Sign Up Share Track settings page.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('signup_share_track_settings'),
     'access arguments' => array('administer signup_share_track'),
     'file' => 'signup_share_track.admin.inc',
     'weight' => -10,
-  );
-  $items['admin/config/people/sst/settings'] = array(
-    'title' => 'Sign Up Share Track Settings',
-    'description' => 'Sign Up Share Track settings page.',
-    'access arguments' => array('administer signup_share_track'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'file' => 'signup_share_track.admin.inc',
-    'weight' => -9,
   );
   
   return $items;

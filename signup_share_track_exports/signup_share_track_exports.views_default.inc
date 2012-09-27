@@ -56,9 +56,10 @@ function signup_share_track_exports_views_default_views() {
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
-  $handler->display->display_options['path'] = 'admin/config/sst/reports';
-  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['path'] = 'admin/reports/sst';
+  $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'Sign Up Share Track Reports';
+  $handler->display->display_options['menu']['description'] = 'Listing of Signups through Sign Up, Share and Track';
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
@@ -77,7 +78,7 @@ function signup_share_track_exports_views_default_views() {
   $handler->display->display_options['style_options']['replace_newlines'] = 0;
   $handler->display->display_options['style_options']['header'] = 1;
   $handler->display->display_options['defaults']['header'] = FALSE;
-  $handler->display->display_options['path'] = 'admin/config/sst/reports/export';
+  $handler->display->display_options['path'] = 'admin/reports/sst/export';
   $handler->display->display_options['displays'] = array(
     'page' => 'page',
     'default' => 0,
