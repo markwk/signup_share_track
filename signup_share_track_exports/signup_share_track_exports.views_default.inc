@@ -19,7 +19,7 @@ function signup_share_track_exports_views_default_views() {
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  
+
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Signup Share Track Reports';
@@ -39,6 +39,10 @@ function signup_share_track_exports_views_default_views() {
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
   $handler->display->display_options['relationships']['uid']['table'] = 'signup_share_track';
   $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  /* Field: Global: Send e-mail */
+  $handler->display->display_options['fields']['views_send']['id'] = 'views_send';
+  $handler->display->display_options['fields']['views_send']['table'] = 'views';
+  $handler->display->display_options['fields']['views_send']['field'] = 'views_send';
   /* Field: Signup Share Track: User */
   $handler->display->display_options['fields']['uid']['id'] = 'uid';
   $handler->display->display_options['fields']['uid']['table'] = 'signup_share_track';
@@ -52,7 +56,13 @@ function signup_share_track_exports_views_default_views() {
   $handler->display->display_options['fields']['count']['id'] = 'count';
   $handler->display->display_options['fields']['count']['table'] = 'signup_share_track';
   $handler->display->display_options['fields']['count']['field'] = 'count';
-  
+  /* Field: User: E-mail */
+  $handler->display->display_options['fields']['mail']['id'] = 'mail';
+  $handler->display->display_options['fields']['mail']['table'] = 'users';
+  $handler->display->display_options['fields']['mail']['field'] = 'mail';
+  $handler->display->display_options['fields']['mail']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['mail']['link_to_user'] = '0';
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
@@ -63,7 +73,7 @@ function signup_share_track_exports_views_default_views() {
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
-  
+
   /* Display: Data export */
   $handler = $view->new_display('views_data_export', 'Data export', 'signup_share_track');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
@@ -78,6 +88,20 @@ function signup_share_track_exports_views_default_views() {
   $handler->display->display_options['style_options']['replace_newlines'] = 0;
   $handler->display->display_options['style_options']['header'] = 1;
   $handler->display->display_options['defaults']['header'] = FALSE;
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: Signup Share Track: User */
+  $handler->display->display_options['fields']['uid']['id'] = 'uid';
+  $handler->display->display_options['fields']['uid']['table'] = 'signup_share_track';
+  $handler->display->display_options['fields']['uid']['field'] = 'uid';
+  $handler->display->display_options['fields']['uid']['link_to_user'] = 1;
+  /* Field: Signup Share Track: Share URL */
+  $handler->display->display_options['fields']['url']['id'] = 'url';
+  $handler->display->display_options['fields']['url']['table'] = 'signup_share_track';
+  $handler->display->display_options['fields']['url']['field'] = 'url';
+  /* Field: Signup Share Track: Share Count */
+  $handler->display->display_options['fields']['count']['id'] = 'count';
+  $handler->display->display_options['fields']['count']['table'] = 'signup_share_track';
+  $handler->display->display_options['fields']['count']['field'] = 'count';
   $handler->display->display_options['path'] = 'admin/reports/sst/export';
   $handler->display->display_options['displays'] = array(
     'page' => 'page',
