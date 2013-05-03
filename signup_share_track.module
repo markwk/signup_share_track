@@ -439,18 +439,16 @@ function signup_share_track_user_register($email, $ref_user = NULL){
       db_insert('signup_share_track_signup')->fields(array('uid' => $account->uid, 'uid_from' => $ref_user, 'signed_up' => REQUEST_TIME))->execute();
       db_update('signup_share_track')->condition('uid', $ref_user, '=')->expression('count', 'count + :count', array(':count' => 1))->execute();
     }
-    $query = db_select('signup_share_track', 'sst')->fields('sst')->condition('uid', $account->uid)->execute()->fetchAssoc();
-    if($query['url']){
-      global $user;
-      $user = user_load($account->uid);
-      $form_state['uid'] = $account->uid;
-      $form_state['redirect'] = 'join/'.$query['url'];
-      user_login_finalize($form_state);
-      drupal_goto('join/'.$query['url']);
-    }
-  }else{
-    $message = t('The e-mail address %email is already registered. <a href="@password">Have you forgotten your password?</a>', array('%email' => $email, '@password' => url('user/password')));
-    drupal_set_message($message, 'error');
+    
+  }
+  $query = db_select('signup_share_track', 'sst')->fields('sst')->condition('uid', $account->uid)->execute()->fetchAssoc();
+  if($query['url']){
+    global $user;
+    $user = user_load($account->uid);
+    $form_state['uid'] = $account->uid;
+    $form_state['redirect'] = 'join/'.$query['url'];
+    user_login_finalize($form_state);
+    drupal_goto('join/'.$query['url']);
   }
 }
 
