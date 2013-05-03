@@ -143,6 +143,25 @@ function signup_share_track_block_view($delta = '') {
   
 }
 
+/*
+ * Implements hook_contextual_links_view_alter
+ */
+function signup_share_track_contextual_links_view_alter(&$element, &$items) {
+  // This hook is called for EVERY set of contextual links
+  // on a page.  We first want to check the $element to make
+  // sure we are adding a link to the correct list of contextual
+  // links. In this case we only want to add a link to blocks
+  // created by this module. We just add links using the
+  // same array structure as is used by theme_links.
+  
+  if (isset($element['#element']['#block']) && 
+          $element['#element']['#block']->delta == "sst_signup_form") {
+    $element['#links']['sst-settings'] = array(
+      'title' => t('Sign Up Share Track Settings'),
+      'href' => url('admin/config/people/sst', array('absolute' => TRUE)),
+    );
+  }
+}
 
 /**
  * Implements hook_user_view()
